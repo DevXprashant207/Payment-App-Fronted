@@ -1,26 +1,48 @@
-import {
-  BrowserRouter,
-  Route,
-  Routes,
-} from "react-router-dom";
-import { Signup } from "./pages/SignUp";
-import { Signin } from "./pages/SignIn";
-import { Dashboard } from "./pages/Dashboard";
-import { SendMoney } from "./pages/SendMoney";
-
-function App() {
+// Main App Component
+const App = () => {
   return (
-    <>
-       <BrowserRouter>
-        <Routes>
-          <Route path="/signup" element={<Signup />} />
-          <Route path="/signin" element={<Signin />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/send" element={<SendMoney />} />
-        </Routes>
-      </BrowserRouter>
-    </>
-  )
-}
+    <ToastProvider>
+      <AuthProvider>
+        <RouterProvider>
+          <AppContent />
+        </RouterProvider>
+      </AuthProvider>
+    </ToastProvider>
+  );
+};
 
-export default App
+const AppContent = () => {
+  const { currentPath } = useRouter();
+  const { isAuthenticated } = useAuth();
+
+  // Set up global toast function
+  const { showToast: globalShowToast } = useContext(ToastContext);
+  showToast = globalShowToast;
+
+  const renderPage = () => {
+    switch (currentPath) {
+      case '/signup':
+        return <SignupPage />;
+      case '/signin':
+        return <SigninPage />;
+      case '/dashboard':
+        return (
+          <ProtectedRoute>
+            <DashboardPage />
+          </ProtectedRoute>
+        );
+      case '/transfer':
+        return (
+          <ProtectedRoute>
+            <TransferPage />
+          </ProtectedRoute>
+        );
+      default:
+        return isAuthenticated ? <DashboardPage /> : <SigninPage />;
+    }
+  };
+
+  return <div className="min-h-screen">{renderPage()}</div>;
+};
+
+export default App;
